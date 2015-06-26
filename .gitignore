@@ -1,0 +1,11 @@
+# Binary files #
+################
+stm32-firmware
+stm32-firmware_flash.ld
+# Build files#
+##############
+**/CMakeCache.txt
+**/Makefile
+**/cmake_install.cmake
+CMakeFiles/*
+
