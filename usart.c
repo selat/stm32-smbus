@@ -5,7 +5,7 @@
 
 #include <stdio.h>
 
-#include "USART.h"
+#include "usart.h"
 
 void USART_init()
 {

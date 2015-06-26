@@ -1,4 +1,4 @@
-#include "RCC.h"
+#include "rcc.h"
 
 #include <stm32f4xx_rcc.h>
 
