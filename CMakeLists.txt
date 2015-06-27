@@ -22,6 +22,8 @@ SET(PROJECT_SOURCES
   rcc.c
   usart.c
   utils.c
+  smbus.c
+  mlx90614.c
 )
 
 SET(STM32_LINKER_SCRIPT ${CMSIS_LINKER_SCRIPT})
