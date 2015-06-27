@@ -134,7 +134,7 @@ void SMBus_ReadWord(uint8_t slaveAddr, uint16_t* data, uint8_t ReadAddr)
     while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_BYTE_RECEIVED));
     pec = I2C_ReceiveData(SMBus_NAME);
     I2C_GenerateSTOP(SMBus_NAME, ENABLE);
-    *data = ((uint16_t)buff[0] << 8) | buff[1];
+    *data = ((uint16_t)buff[1] << 8) | buff[0];
     // EXT_CRT_SECTION();
 }
 

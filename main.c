@@ -22,11 +22,12 @@ int main(void) {
 	printf("ok!\r\n");
 
 	while(1) {
-//		float temp = MLX90614_ReadTemperature() * 0.02f - 38.2f;
 		uint16_t temp_ambient, temp_object;
 		temp_ambient = MLX90614_ReadAmbientTemp();
 		temp_object = MLX90614_ReadObjectTemp();
-		printf("MLX90614: %"PRIu16", %"PRIu16"\r\n", temp_ambient, temp_object);
+		float temp1 = (temp_ambient - 0x2DE4) * 0.02f - 38.2f;
+		float temp2 = (temp_object) * 0.02f - 273.15f;
+		printf("MLX90614: %d.%d %d.%d\r\n", (int)temp1, (int)(temp1 * 100) % 100, (int)temp2, (int)(temp2 * 100) % 100);
 		DelayMs(100);
 	}
 	return 0;
