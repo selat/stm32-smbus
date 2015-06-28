@@ -8,7 +8,7 @@
 #include "utils.h"
 
 static uint16_t to_max, to_min;
-static uint8_t mlx90614_address = 0x00;
+static uint8_t mlx90614_address = 0x02;
 
 /**
  * @brief  Enable SMBus communication mode for MLX90614.
@@ -69,13 +69,16 @@ uint16_t MLX90614_ReadObjectTemp(void)
 	SMBus_ReadWord(mlx90614_address, &tmp, 0x07);
 	uint16_t res = tmp;
 
-	MLX90614_SetAddress(0x02);
-	SMBus_ReadWord(mlx90614_address, &tmp, 0x2E);
-	printf("Address: %"PRIu16"\r\n", tmp);
 	return res;
 }
 
 void MLX90614_SetAddress(uint8_t address)
 {
-	SMBus_WriteWord(mlx90614_address, address, 0x2E);
+	uint16_t res;
+	/* SMBus_WriteWord(mlx90614_address, 0x00, 0x2E); */
+	/* DelayMs(10); */
+	/* SMBus_WriteWord(mlx90614_address, address | ((uint32_t)address << 8), 0x2E); */
+	/* DelayMs(10); */
+	SMBus_ReadWord(mlx90614_address, &res, 0x2E);
+	printf("Address write result: %"PRIu16"\r\n", res);
 }

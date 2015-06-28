@@ -22,5 +22,6 @@ extern void SMBus_WriteBits(uint8_t slaveAddr, uint8_t regAddr, uint8_t bitStart
 extern void SMBus_WriteBit(uint8_t slaveAddr, uint8_t regAddr, uint8_t bitNum, uint8_t data);
 extern void SMBus_ReadBits(uint8_t slaveAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint8_t *data);
 extern void SMBus_ReadBit(uint8_t slaveAddr, uint8_t regAddr, uint8_t bitNum, uint8_t *data);
+extern uint8_t SMBus_CRC8(uint32_t data);
 
 #endif

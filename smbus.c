@@ -71,6 +71,7 @@ void SMBus_init()
  */
 void SMBus_WriteWord(uint8_t slaveAddr, uint16_t data, uint8_t WriteAddr)
 {
+	volatile uint32_t pec = SMBus_CRC8(((uint32_t)WriteAddr << 16) | ((uint32_t)(data & 0xFF) << 8) | (data >> 8));
     I2C_GenerateSTART(SMBus_NAME, ENABLE);
     while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_MODE_SELECT));
 
@@ -80,9 +81,11 @@ void SMBus_WriteWord(uint8_t slaveAddr, uint16_t data, uint8_t WriteAddr)
     I2C_SendData(SMBus_NAME, WriteAddr);
     while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_BYTE_TRANSMITTED));
 
+    I2C_SendData(SMBus_NAME, data & 0xFF);
+    while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_BYTE_TRANSMITTED));
     I2C_SendData(SMBus_NAME, (data >> 8));
     while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_BYTE_TRANSMITTED));
-    I2C_SendData(SMBus_NAME, data & 0xFF);
+    I2C_SendData(SMBus_NAME, pec);
     while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_BYTE_TRANSMITTED));
 
     I2C_GenerateSTOP(SMBus_NAME, ENABLE);
@@ -90,7 +93,8 @@ void SMBus_WriteWord(uint8_t slaveAddr, uint16_t data, uint8_t WriteAddr)
 
 uint8_t SMBus_ReadByte(uint8_t slaveAddr, uint8_t readAddr)
 {
-	uint8_t res = SMBus_ReadByte(slaveAddr, readAddr);
+	uint16_t res;
+	SMBus_ReadWord(slaveAddr, &res, readAddr);
 	return res;
 }
 
@@ -106,7 +110,7 @@ void SMBus_ReadWord(uint8_t slaveAddr, uint16_t* data, uint8_t ReadAddr)
 {
     // ENTR_CRT_SECTION();
 	uint8_t buff[2];
-	uint8_t pec;
+	volatile uint8_t pec, expected_pec;
 
     while (I2C_GetFlagStatus(SMBus_NAME, I2C_FLAG_BUSY));
 
@@ -133,6 +137,7 @@ void SMBus_ReadWord(uint8_t slaveAddr, uint16_t* data, uint8_t ReadAddr)
     buff[1] = I2C_ReceiveData(SMBus_NAME);
     while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_BYTE_RECEIVED));
     pec = I2C_ReceiveData(SMBus_NAME);
+    expected_pec = SMBus_CRC8(((uint32_t)ReadAddr << 16) | ((uint32_t)buff[0] << 8) | buff[1]);
     I2C_GenerateSTOP(SMBus_NAME, ENABLE);
     *data = ((uint16_t)buff[1] << 8) | buff[0];
     // EXT_CRT_SECTION();
@@ -201,4 +206,24 @@ void SMBus_ReadBit(uint8_t slaveAddr, uint8_t regAddr, uint8_t bitNum, uint8_t *
 {
     uint8_t tmp = SMBus_ReadByte(slaveAddr, regAddr);
     *data = tmp & (1 << bitNum);
+}
+
+/**
+ * Calculate CRC8 sum for a word
+ * @param data input word
+ * @return calculated CRC8 for an input word
+ */
+uint8_t SMBus_CRC8(uint32_t data)
+{
+	uint32_t msg = data << 8;
+	uint32_t key = 0x107 << 23;
+	uint32_t mask = 1 << 31;
+	while(mask > 0x80) {
+		if(mask & msg) {
+			msg ^= key;
+		}
+		key >>= 1;
+		mask >>= 1;
+	}
+	return msg;
 }

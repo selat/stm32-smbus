@@ -18,6 +18,7 @@ int main(void) {
 	SMBus_init();
 	MLX90614_Init();
 	MLX90614_TestConnection();
+	MLX90614_SetAddress(0x02);
 
 	printf("ok!\r\n");
 
