@@ -83,33 +83,33 @@ void SMBus_WriteWord(uint8_t slaveAddr, uint16_t data, uint8_t WriteAddr)
     counter = SMBus_Max_Delay_Cycles;
     while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED) && counter) --counter;
     if(counter == 0) {
-	    return counter;
+	    return;
     }
 
     I2C_SendData(SMBus_NAME, WriteAddr);
     counter = SMBus_Max_Delay_Cycles;
     while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_BYTE_TRANSMITTED) && counter) --counter;
     if(counter == 0) {
-	    return counter;
+	    return;
     }
 
     I2C_SendData(SMBus_NAME, data & 0xFF);
     counter = SMBus_Max_Delay_Cycles;
     while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_BYTE_TRANSMITTED) && counter) --counter;
     if(counter == 0) {
-	    return counter;
+	    return;
     }
     I2C_SendData(SMBus_NAME, (data >> 8));
     counter = SMBus_Max_Delay_Cycles;
     while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_BYTE_TRANSMITTED) && counter) --counter;
     if(counter == 0) {
-	    return counter;
+	    return;
     }
     I2C_SendData(SMBus_NAME, pec);
     counter = SMBus_Max_Delay_Cycles;
     while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_BYTE_TRANSMITTED) && counter) -- counter;
     if(counter == 0) {
-	    return counter;
+	    return;
     }
 
     I2C_GenerateSTOP(SMBus_NAME, ENABLE);
@@ -135,31 +135,67 @@ void SMBus_ReadWord(uint8_t slaveAddr, uint16_t* data, uint8_t ReadAddr)
     // ENTR_CRT_SECTION();
 	uint8_t buff[2];
 	volatile uint8_t pec, expected_pec;
+	uint32_t counter = SMBus_Max_Delay_Cycles;
 
-    while (I2C_GetFlagStatus(SMBus_NAME, I2C_FLAG_BUSY));
+    while (I2C_GetFlagStatus(SMBus_NAME, I2C_FLAG_BUSY) && counter) --counter;
+    if(counter == 0) {
+	    return;
+    }
 
     I2C_GenerateSTART(SMBus_NAME, ENABLE);
 
-    while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_MODE_SELECT));
+    counter = SMBus_Max_Delay_Cycles;
+    while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_MODE_SELECT) && counter) --counter;
+    if(counter == 0) {
+	    return;
+    }
     I2C_Send7bitAddress(SMBus_NAME, slaveAddr, I2C_Direction_Transmitter);
-    while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED));
+    counter = SMBus_Max_Delay_Cycles;
+    while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED) && counter) --counter;
+    if(counter == 0) {
+	    return;
+    }
 
     I2C_Cmd(SMBus_NAME, ENABLE);
 
     I2C_SendData(SMBus_NAME, ReadAddr);
-    while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_BYTE_TRANSMITTED));
+    counter = SMBus_Max_Delay_Cycles;
+    while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_BYTE_TRANSMITTED) && counter) --counter;
+    if(counter == 0) {
+	    return;
+    }
 
     I2C_GenerateSTART(SMBus_NAME, ENABLE);
-    while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_MODE_SELECT));
+    counter = SMBus_Max_Delay_Cycles;
+    while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_MODE_SELECT) && counter) --counter;
+    if(counter == 0) {
+	    return;
+    }
 
     I2C_Send7bitAddress(SMBus_NAME, slaveAddr, I2C_Direction_Receiver);
-    while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED));
+    counter = SMBus_Max_Delay_Cycles;
+    while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED) && counter) --counter;
+    if(counter == 0) {
+	    return;
+    }
 
-    while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_BYTE_RECEIVED));
+    counter = SMBus_Max_Delay_Cycles;
+    while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_BYTE_RECEIVED) && counter) --counter;
+    if(counter == 0) {
+	    return;
+    }
     buff[0] = I2C_ReceiveData(SMBus_NAME);
-    while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_BYTE_RECEIVED));
+    counter = SMBus_Max_Delay_Cycles;
+    while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_BYTE_RECEIVED) && counter) --counter;
+    if(counter == 0) {
+	    return;
+    }
     buff[1] = I2C_ReceiveData(SMBus_NAME);
-    while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_BYTE_RECEIVED));
+    counter = SMBus_Max_Delay_Cycles;
+    while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_BYTE_RECEIVED) && counter) --counter;
+    if(counter == 0) {
+	    return;
+    }
     pec = I2C_ReceiveData(SMBus_NAME);
     expected_pec = SMBus_CRC8(((uint32_t)ReadAddr << 16) | ((uint32_t)buff[0] << 8) | buff[1]);
     I2C_GenerateSTOP(SMBus_NAME, ENABLE);
