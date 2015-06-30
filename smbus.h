@@ -13,6 +13,7 @@
 #define SMBus_RCC_Port         RCC_AHB1Periph_GPIOB
 #define SMBus_Speed            100000
 #define SMBus_GPIO_AF          GPIO_AF_I2C2
+#define SMBus_Max_Delay_Cycles 10000
 
 extern void SMBus_init();
 extern void SMBus_WriteWord(uint8_t slaveAddr, uint16_t data, uint8_t WriteAddr);

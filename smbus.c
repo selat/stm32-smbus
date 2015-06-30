@@ -72,21 +72,45 @@ void SMBus_init()
 void SMBus_WriteWord(uint8_t slaveAddr, uint16_t data, uint8_t WriteAddr)
 {
 	volatile uint32_t pec = SMBus_CRC8(((uint32_t)WriteAddr << 16) | ((uint32_t)(data & 0xFF) << 8) | (data >> 8));
+	uint32_t counter = SMBus_Max_Delay_Cycles;
     I2C_GenerateSTART(SMBus_NAME, ENABLE);
-    while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_MODE_SELECT));
+    while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_MODE_SELECT) && counter) --counter;
+    if(counter == 0) {
+	    return;
+    }
 
     I2C_Send7bitAddress(SMBus_NAME, slaveAddr, I2C_Direction_Transmitter);
-    while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED));
+    counter = SMBus_Max_Delay_Cycles;
+    while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED) && counter) --counter;
+    if(counter == 0) {
+	    return counter;
+    }
 
     I2C_SendData(SMBus_NAME, WriteAddr);
-    while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_BYTE_TRANSMITTED));
+    counter = SMBus_Max_Delay_Cycles;
+    while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_BYTE_TRANSMITTED) && counter) --counter;
+    if(counter == 0) {
+	    return counter;
+    }
 
     I2C_SendData(SMBus_NAME, data & 0xFF);
-    while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_BYTE_TRANSMITTED));
+    counter = SMBus_Max_Delay_Cycles;
+    while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_BYTE_TRANSMITTED) && counter) --counter;
+    if(counter == 0) {
+	    return counter;
+    }
     I2C_SendData(SMBus_NAME, (data >> 8));
-    while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_BYTE_TRANSMITTED));
+    counter = SMBus_Max_Delay_Cycles;
+    while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_BYTE_TRANSMITTED) && counter) --counter;
+    if(counter == 0) {
+	    return counter;
+    }
     I2C_SendData(SMBus_NAME, pec);
-    while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_BYTE_TRANSMITTED));
+    counter = SMBus_Max_Delay_Cycles;
+    while (!I2C_CheckEvent(SMBus_NAME, I2C_EVENT_MASTER_BYTE_TRANSMITTED) && counter) -- counter;
+    if(counter == 0) {
+	    return counter;
+    }
 
     I2C_GenerateSTOP(SMBus_NAME, ENABLE);
 }
